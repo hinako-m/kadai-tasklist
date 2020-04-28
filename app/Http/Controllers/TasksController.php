@@ -52,7 +52,7 @@ class TasksController extends Controller
         ]);
         
         $task = new Task;
-        $task->string('status', 10);           //追加
+        // $task->string('status', 10);           //追加
         $task->status = $request->status;    // 追加
         $task->content = $request->content;
         $task->save();
@@ -107,7 +107,7 @@ class TasksController extends Controller
         ]);
 
         $task = Task::find($id);
-        $task->string('status', 10);           //追加
+        // $task->string('status', 10);           //追加
         $task->status = $request->status;    // 追加
         $task->content = $request->content;
         $task->save();
