@@ -23,9 +23,8 @@ class TasksController extends Controller
             
             $data = [
                 'user' => $user,
-                'tasks' => $tasklists,
+                'tasklists' => $tasklists,
             ];
-            return view('welcome', $data);
         }
         
         return view('welcome', $data);
@@ -78,7 +77,6 @@ class TasksController extends Controller
         ]);
         
         return redirect('/');
-       
     }
 
     /**
@@ -96,6 +94,8 @@ class TasksController extends Controller
             return view('tasks.show', [
                 'task' => $tasklist,
             ]);
+            
+        return redirect('/');
         }
     }
 
@@ -115,6 +115,8 @@ class TasksController extends Controller
                 'task' => $tasklist,
             ]);
         }
+        
+        return redirect('/');
     }
 
     /**
