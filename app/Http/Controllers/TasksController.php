@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Task;  //追加
+use App\Tasklist;  //追加
 
 class TasksController extends Controller
 {
@@ -16,11 +16,21 @@ class TasksController extends Controller
     // 「タスク一覧表示処理」
     public function index()
     {
-        $tasks = Task::all();
+        $data = [];
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $tasklists = $user->tasklists()->orderBy('created_at', 'desc')->paginate(10);
+            
+            $data = [
+                'user' => $user,
+                'tasks' => $tasklists,
+            ];
+            return view('welcome', $data);
+        }
         
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+        return view('welcome', $data);
+        
+        // $tasks = Task::all();
     }
 
     /**
@@ -31,11 +41,16 @@ class TasksController extends Controller
     // 「作成ページ」
     public function create()
     {
-        $task = new Task;
+        $tasklist = new Tasklist;
         
-        return view('tasks.create', [
-            'task' => $task,
-        ]);
+        if (\Auth::id() === $tasklist->user_id) {
+            
+            return view('tasks.create', [
+                'task' => $tasklist,
+            ]);
+        }
+        
+        return redirect('/');
     }
 
     /**
@@ -51,13 +66,19 @@ class TasksController extends Controller
             'content' => 'required|max:191',
         ]);
         
-        $task = new Task;
+        $tasklist = new Tasklist;
         // $task->string('status', 10);           //追加
-        $task->status = $request->status;    // 追加
-        $task->content = $request->content;
-        $task->save();
+        // $task->status = $request->status;    // 追加
+        // $task->content = $request->content;
+        // $task->save();
+
+        $request->user()->tasklists()->create([
+            'status' => $request->status,
+            'content' => $request->content,
+        ]);
         
         return redirect('/');
+       
     }
 
     /**
@@ -69,11 +90,13 @@ class TasksController extends Controller
     // 「詳細ページ」
     public function show($id)
     {
-        $task = Task::find($id);
+        $tasklist = Tasklist::find($id);
         
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        if (\Auth::id() === $tasklist->user_id) {
+            return view('tasks.show', [
+                'task' => $tasklist,
+            ]);
+        }
     }
 
     /**
@@ -85,11 +108,13 @@ class TasksController extends Controller
     // 「編集ページ」
     public function edit($id)
     {
-        $task = Task::find($id);
+        $tasklist = Tasklist::find($id);
 
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        if (\Auth::id() === $tasklist->user_id) {
+            return view('tasks.edit', [
+                'task' => $tasklist,
+            ]);
+        }
     }
 
     /**
@@ -106,12 +131,16 @@ class TasksController extends Controller
             'content' => 'required|max:191',
         ]);
 
-        $task = Task::find($id);
-        // $task->string('status', 10);           //追加
-        $task->status = $request->status;    // 追加
-        $task->content = $request->content;
-        $task->save();
+        $tasklist = Tasklist::find($id);
+        // $tasklist->status = $request->status;    // 追加
+        // $tasklist->content = $request->content;
+        // $tasklist->save();
 
+        $request->user()->tasklists()->create([
+            'status' => $request->status,
+            'content' => $request->content,
+        ]);
+        
         return redirect('/');
     }
 
@@ -123,9 +152,17 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::find($id);
-        $task->delete();
-        
+        $tasklist = \App\Tasklist::find($id);
+
+        if (\Auth::id() === $tasklist->user_id) {
+            $tasklist->delete();
+        }
+
         return redirect('/');
+        
+        // $task = Task::find($id);
+        // $task->delete();
+        
+        // return redirect('/');
     }
 }
