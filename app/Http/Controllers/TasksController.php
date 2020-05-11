@@ -42,12 +42,9 @@ class TasksController extends Controller
     {
         $tasklist = new Tasklist;
         
-        if (\Auth::id() === $tasklist->user_id) {
-            
-            return view('tasks.create', [
+        return view('tasks.create', [
                 'task' => $tasklist,
-            ]);
-        }
+        ]);
         
         return redirect('/');
     }
