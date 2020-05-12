@@ -21,13 +21,14 @@ class TasksController extends Controller
             $user = \Auth::user();
             $tasklists = $user->tasklists()->orderBy('created_at', 'desc')->paginate(10);
             
-            $data = [
+                $data = [
                 'user' => $user,
                 'tasklists' => $tasklists,
             ];
+            
         }
         
-        return view('welcome', $data);
+        return view('welcome',$data);
         
         // $tasks = Task::all();
     }
@@ -45,8 +46,6 @@ class TasksController extends Controller
         return view('tasks.create', [
                 'task' => $tasklist,
         ]);
-        
-        return redirect('/');
     }
 
     /**
@@ -62,7 +61,7 @@ class TasksController extends Controller
             'content' => 'required|max:191',
         ]);
         
-        $tasklist = new Tasklist;
+        // $tasklist = new Tasklist;
         // $task->string('status', 10);           //追加
         // $task->status = $request->status;    // 追加
         // $task->content = $request->content;
@@ -87,13 +86,12 @@ class TasksController extends Controller
     {
         $tasklist = Tasklist::find($id);
         
-        if (\Auth::id() === $tasklist->user_id) {
+        if (\Auth::id() !== $tasklist->user_id) {
+            return redirect('/');
+        }
             return view('tasks.show', [
                 'task' => $tasklist,
             ]);
-            
-        return redirect('/');
-        }
     }
 
     /**
@@ -107,13 +105,13 @@ class TasksController extends Controller
     {
         $tasklist = Tasklist::find($id);
 
-        if (\Auth::id() === $tasklist->user_id) {
-            return view('tasks.edit', [
-                'task' => $tasklist,
-            ]);
+        if (\Auth::id() !== $tasklist->user_id) {
+            return redirect('/');
         }
         
-        return redirect('/');
+        return view('tasks.edit', [
+        'task' => $tasklist,
+        ]);
     }
 
     /**
@@ -134,11 +132,14 @@ class TasksController extends Controller
         // $tasklist->status = $request->status;    // 追加
         // $tasklist->content = $request->content;
         // $tasklist->save();
+        
+        if (\Auth::id() !== $tasklist->user_id) {
+        return redirect('/');
+        }
 
-        $request->user()->tasklists()->create([
-            'status' => $request->status,
-            'content' => $request->content,
-        ]);
+        $tasklist->status = $request->status;
+        $tasklist->content = $request->content;
+        $tasklist->save();
         
         return redirect('/');
     }
@@ -151,17 +152,16 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $tasklist = \App\Tasklist::find($id);
+        $tasklist = Tasklist::find($id);
 
-        if (\Auth::id() === $tasklist->user_id) {
-            $tasklist->delete();
+        if (\Auth::id() !== $tasklist->user_id) {
+           return redirect('/');
         }
 
-        return redirect('/');
-        
         // $task = Task::find($id);
         // $task->delete();
         
-        // return redirect('/');
+        $tasklist->delete();
+        return redirect('/');
     }
 }
